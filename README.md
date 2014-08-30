@@ -1,8 +1,8 @@
-org.dita4publishers.common.xslt
+org.dita4publishers.dita2indesign
 ======================
 
-Provides XSLT modules and function libraries appropriate
-for any Open Toolkit transform. Primarily supports the
-D4P map-driven processing framework.
+DITA to InCopy and InDesign generation support
 
-Depends on the org.dita-community-common.xslt plugin <https://github.com/dita-community/org.dita-community.common.xslt>
+Provides an XSLT framework for generating InCopy (ICNX or ICML)
+documents that can be placed in InDesign. Enables partial automation
+of DITA-to-InDesign workflows.
