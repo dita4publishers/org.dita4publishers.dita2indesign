@@ -5,7 +5,8 @@
       xmlns:ctbl="http//dita2indesign.org/functions/cals-table-to-inx-mapping"
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
-      exclude-result-prefixes="xs df ctbl incxgen e2s"
+      xmlns:relpath="http://dita2indesign/functions/relpath"
+      exclude-result-prefixes="xs df ctbl incxgen e2s relpath"
       version="2.0">
   
   <!-- CALS table to IDML table 
@@ -13,7 +14,7 @@
     Generates InDesign IDML tables from DITA CALS tables.
     Implements the "tables" mode.
     
-    Copyright (c) 2011 DITA for Publishers
+    Copyright (c) 2011, 2014 DITA for Publishers
     
   -->
  
@@ -34,17 +35,30 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/tgroup')]">
-    <xsl:variable name="colCounts" as="xs:integer*">
-      <xsl:apply-templates mode="calcRowEntryCounts" select="*/*[df:class(., 'topic/row')]/*[df:class(., 'topic/entry')]"/>
-    </xsl:variable>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
+    <xsl:variable name="matrixTable" as="element()">
+      <xsl:apply-templates mode="make-matrix-table" select=".">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        <xsl:with-param name="colspecElems" as="element()*" select="*[df:class(., 'topic/colspec')]" tunnel="yes"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    <xsl:if test="$doDebug">
+      <xsl:variable name="matrixTableURI" as="xs:string"
+        select="relpath:newFile($outputPath, 'matrixTable.xml')"
+      />
+      <xsl:message> + [DEBUG] Writing matrix table to <xsl:value-of select="$matrixTableURI"/></xsl:message>
+      <xsl:result-document href="{$matrixTableURI}" indent="yes">
+        <xsl:sequence select="$matrixTable"/>
+      </xsl:result-document>
+    </xsl:if>
     <xsl:variable name="numBodyRows"  as="xs:integer"
-      select="count(*[df:class(., 'topic/tbody')]/*[df:class(., 'topic/row')])"
+      select="count($matrixTable/tbody/row)"
     />
     <xsl:variable name="numHeaderRows"  as="xs:integer"
-      select="count(*[df:class(., 'topic/thead')]/*[df:class(., 'topic/row')])"
+      select="count($matrixTable/thead/row)"
     />
-    <xsl:variable name="numCols" select="max($colCounts)" as="xs:integer"/>
+    <xsl:variable name="numCols" select="count($matrixTable/*[1]/*[1]/cell)" as="xs:integer"/>
     <xsl:variable name="tableID" select="generate-id(.)"/>
     <xsl:variable name="tStyle" select="e2s:getTStyleForElement(.)" as="xs:string"/>
     <xsl:if test="$numCols != count(*[df:class(., 'topic/colspec')])">
@@ -60,6 +74,8 @@
       ColumnCount="{$numCols}" 
       Self="rc_{generate-id()}"><xsl:text>&#x0a;</xsl:text>
       <xsl:apply-templates select="." mode="crow"/>
+        <xsl:with-param name="matrixTable" as="element()" tunnel="yes" select="$matrixTable"/>
+      
       <!-- replace this apply templates with function to generate ccol elements.
         This apply-templates generates a ccol for every cell; just need one ccol for each column
         <xsl:apply-templates select="row" mode="ccol"/> -->
@@ -73,6 +89,7 @@
         <xsl:with-param name="colCount" select="$numCols" as="xs:integer" tunnel="yes"/>
         <xsl:with-param name="rowCount" select="$numHeaderRows + $numBodyRows" as="xs:integer" tunnel="yes"/>
         <xsl:with-param name="colspecElems" as="element()*" select="*[df:class(., 'topic/colspec')]" tunnel="yes"/>
+      <xsl:with-param name="matrixTable" as="element()" tunnel="yes" select="$matrixTable"/>
       </xsl:apply-templates>
     </Table><xsl:text>&#x0a;</xsl:text>    
   </xsl:template>
@@ -95,14 +112,19 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/row')]" mode="crow">
+    <xsl:param name="matrixTable" as="element()" tunnel="yes"/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <!-- In InDesign tables, the header and body rows are indexed together
+      
+      Note that the index is zero indexed.
       -->
+    <xsl:variable name="rowid" as="xs:string" select="generate-id(.)"/>
+    
     <xsl:variable name="rowIndex"  as="xs:integer"
-      select="if (parent::*[df:class(., 'topic/tbody')])
-      then count(../../*[df:class(., 'topic/thead')]/*[df:class(., 'topic/row')]) +
-           count(preceding-sibling::*[self::row or df:class(., 'topic/row')])
-      else count(preceding-sibling::*[self::row or df:class(., 'topic/row')])
-      "/>
+      select="count(ancestor::*[df:class(., 'topic/tgroup')]//*[df:class(., 'topic/row')][. &lt;&lt; current()] )"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] crow: topic/row - rowIndex="<xsl:value-of select="$rowIndex"/>"</xsl:message>
+    </xsl:if>
     <Row 
       Name="{$rowIndex}" 
       SingleRowHeight="1" 
@@ -114,25 +136,35 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/entry')]">
-    <xsl:param name="colCount" as="xs:integer" tunnel="yes"/>
-    <xsl:param name="rowCount" as="xs:integer" tunnel="yes"/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     <xsl:param name="cellStyle" as="xs:string" tunnel="yes" select="'[None]'"/>
+    <xsl:param name="colCount" as="xs:integer" tunnel="yes"/>
+    <xsl:param name="rowCount" as="xs:integer" tunnel="yes"/>
     <xsl:param name="colspecElems" as="element()*" tunnel="yes" />
 
-    <xsl:message> + [DEBUG] topic/entry: "<xsl:value-of select="substring(., 80)"/>"</xsl:message>
-    <xsl:message> + [DEBUG] topic/entry: colspecElems="<xsl:sequence select="$colspecElems"/>"</xsl:message>
+    <xsl:param name="matrixTable" as="element()" tunnel="yes" />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topic/entry: "<xsl:value-of select="substring(., 80)"/>"</xsl:message>
+      <xsl:message> + [DEBUG] topic/entry:     namest: <xsl:value-of select="@namest"/></xsl:message>
+      <xsl:message> + [DEBUG] topic/entry:     nameend: <xsl:value-of select="@nameend"/></xsl:message>
+    </xsl:if>
 
+    <xsl:variable name="cellid" as="xs:string" select="generate-id(.)"/>
+    <xsl:variable name="parentRow" as="element()" select=".."/>
     <xsl:variable name="rowNumber" 
-      select="if (../parent::*[df:class(., 'topic/tbody')])
-      then count(../../../*[df:class(., 'topic/thead')]/*[df:class(., 'topic/row')]) +
-           count(../preceding-sibling::*[self::row or df:class(., 'topic/row')])
-      else count(../preceding-sibling::*[self::row or df:class(., 'topic/row')])" as="xs:integer"/>
-    <xsl:variable name="colNumber" as="xs:integer"><xsl:call-template name="current-cell-position"/></xsl:variable>
+      as="xs:integer"
+      select="count(ancestor::*[df:class(., 'topic/tgroup')]//*[df:class(., 'topic/row')][. &lt;&lt; $parentRow] )"
+    />
     
-    <!-- InCopy/IDML cell position indices begin at 0; instead of altering the current-cell-position value, 
-         we decrement by 1; also useful for debugging current-cell-position errors -->
-    <xsl:variable name="colNumber" select="$colNumber - 1" as="xs:integer"/>
+    
+    <xsl:variable name="colNumber" as="xs:integer"
+      select="count($matrixTable//cell[@cellid = $cellid][1]/preceding-sibling::cell)"
+      >
+    </xsl:variable>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topic/entry:   colNumber="<xsl:value-of select="$colNumber"/>"</xsl:message>
+    </xsl:if>
     
     <xsl:variable name="colspan">
       <xsl:choose>
@@ -144,7 +176,9 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:message> + [DEBUG] topice/entry: colspan="<xsl:value-of select="$colspan"/></xsl:message>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topic/entry: colspan="<xsl:value-of select="$colspan"/>"</xsl:message>
+    </xsl:if>
     <xsl:variable name="rowspan">
       <xsl:choose>
         <xsl:when test="@morerows">
@@ -229,13 +263,6 @@
     </ParagraphStyleRange><xsl:text>&#x0a;</xsl:text>  
   </xsl:template>
   
-  <!-- This mode calculates the entry number for each entry; a later variable 
-       in the calling code uses the max function to find the highest numbered 
-       entry, which is the total number of columns -->
-  <xsl:template mode="calcRowEntryCounts" match="*[df:class(.,'topic/entry')]">
-    <xsl:call-template name="current-cell-position"/>
-  </xsl:template>
-  
   <xsl:template match="text()" mode="calcRowEntryCounts"/>
   
   <xsl:template mode="crow" match="*" priority="-1">
@@ -243,163 +270,179 @@
       select="concat(name(.), ' [', normalize-space(@class), ']')"/></xsl:message>
   </xsl:template>
   
-  <!-- The following templates construct a matrix representation of the CALS table, 
-       needed for determining the row:col coordinates for a cell, which is used for 
-       the <cell>'s @name. It is taken from the h2d plugin and is modified only as necessary. -->
+  <!-- =======================
+       Mode make matrix table
+       
+       Construct a table where every 
+       cell of the table is explicit
+       so that it's easy to account
+       for vertical and horizontal
+       spans when calculating the
+       effective column number of 
+       cells.       
+       ======================= -->
   
-  <!-- Determine which column the current entry sits in. Count the current entry,
-     plus every entry before it; take spanned rows and columns into account.
-     If any entries in this table span rows, we must examine the entire table to
-     be sure of the current column. Use mode="find-matrix-column".
-     Otherwise, we just need to examine the current row. Use mode="count-cells". -->
-  <xsl:template name="current-cell-position" as="xs:integer">
-    <xsl:variable name="cellCount">
-      <xsl:choose>
-        <xsl:when test="parent::*[self::row or df:class(., 'topic/row')]/parent::*[self::thead or df:class(., 'topic/thead')]">
-          <xsl:apply-templates select="(ancestor::*[self::tgroup | self::*[df:class(., 'topic/tgroup')]][1]/thead/row/*[1])[1]"
-            mode="find-matrix-column">
-            <xsl:with-param name="stop-id" select="generate-id(.)"/>
-          </xsl:apply-templates>
-        </xsl:when>
-        <xsl:when test="ancestor::*[self::table or df:class(., 'topic/table')][1]//*[@morerows][1]">
-          <xsl:apply-templates mode="find-matrix-column"
-            select="(
-            ancestor::*[self::table or df:class(., 'topic/table')][1]/
-              *[self::tgroup or df:class(., 'topic/tgroup')]/
-              *[self::tbody or df:class(., 'topic/tbody')]/
-              *[self::row or df:class(., 'topic/row')]/
-              *[1]|ancestor::*[self::table or df:class(., 'topic/table')][1]/
-              *[self::row or df:class(., 'topic/row')]/*[1])[1]"
-            >
-            <xsl:with-param name="stop-id" select="generate-id(.)"/>
-          </xsl:apply-templates>
-        </xsl:when>
-        <xsl:when test="not(preceding-sibling::*[self::entry or df:class(., 'topic/entry')])">1</xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates select="(preceding-sibling::*[self::entry or df:class(., 'topic/entry')])[last()]" mode="count-cells"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:sequence select="if ($cellCount eq '') then 0 else $cellCount"/>
+  <xsl:template 
+    match="
+    *[df:class(., 'topic/tgroup')]
+    " 
+    mode="make-matrix-table">
+   <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+   
+   <xsl:if test="$doDebug">
+     <xsl:message> + [DEBUG] make-matrix-table: <xsl:value-of select="name(.)"/>...</xsl:message>
+   </xsl:if>
+   <!-- Construct a table of rows and columns
+        reflecting each logical row and column
+        of the table so that we know, for any
+        cell, know what it's absolute row/column
+        position within the matrix is.     
+     
+       Do this in two phases:
+     
+        1. Generate a set of cells, each labeled with the 
+           original row it was generated from and labeled
+           with its absolute row and column number.
+           
+        2. Group the cells by row to create the set of 
+           absolute rows and cells, over which spans
+           are overlayed.
+           
+     -->
+   <xsl:if test="$doDebug">
+     <xsl:message> + [DEBUG] make-matrix-table: Constructing cell set...</xsl:message>
+   </xsl:if>
+   
+   <xsl:variable name="cellSet" as="element()*" 
+     >
+     <!-- Apply templates to the first row in the first child of tgroup,
+          either thead or tbody.
+          
+          Basic approach is to process each row, accumulating cells.
+          We pass the accumulated cells to the next row so that we know
+          if there are any cells intruding into the following row (because
+          they will already have the same row number and a column number)
+       -->
+     <xsl:apply-templates 
+       mode="make-cell-set"
+       select="*[df:class(., 'topic/thead') or df:class(., 'topic/tbody')][1]/*[1]" 
+       >
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+       <xsl:with-param name="rowCount" as="xs:integer" select="0"/>
+       <xsl:with-param name="cellSet" as="element()*" tunnel="yes" select="()"/>
+     </xsl:apply-templates>
+   </xsl:variable>
+
+    <xsl:if test="$doDebug">
+      <xsl:variable name="cellSetURI" as="xs:string"
+        select="relpath:newFile($outputPath, 'cellSet.xml')"
+      />
+      <xsl:message> + [DEBUG] Writing cell set to <xsl:value-of select="$cellSetURI"/></xsl:message>
+      <xsl:result-document href="{$cellSetURI}" indent="yes">
+        <cellSet>
+          <xsl:sequence select="$cellSet"/>
+        </cellSet>
+      </xsl:result-document>
+    </xsl:if>
+
+   <xsl:if test="$doDebug">
+     <xsl:message> + [DEBUG] make-matrix-table: Constructing matrix table...</xsl:message>
+   </xsl:if>
+   <xsl:variable name="matrixTable" as="element()">
+     <matrixTable>
+       <xsl:for-each-group select="$cellSet" group-by="@tableZone">
+         <xsl:element name="{current()/@tableZone}">
+           <xsl:for-each-group select="current-group()" group-by="@rownum">
+             <row rowid="{current()/@rowid}" tableZone="{current()/@tableZone}">
+               <xsl:sequence select="current-group()"/>
+             </row>               
+           </xsl:for-each-group>
+         </xsl:element>
+       </xsl:for-each-group>
+     </matrixTable>
+   </xsl:variable>
+   <xsl:sequence select="$matrixTable"/>
   </xsl:template>
-  
-  <!-- Count the number of cells in the current row. Move backwards from the test cell. Add one
-     for each entry, plus the number of spanned columns. -->
-  <xsl:template match="*" mode="count-cells">
-    <xsl:param name="current-count" select="1" as="xs:integer"/>
+  <xsl:template mode="make-cell-set" match="*[df:class(., 'topic/entry')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="colspecElems" as="element()*" tunnel="yes" />
-    <xsl:variable name="new-count">
-      <xsl:choose>
-        <xsl:when test="incxgen:isColSpan(.,$colspecElems)">
-          <xsl:sequence select="$current-count + number(incxgen:numberColsSpanned(.,$colspecElems))"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:sequence select="$current-count + 1"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="not(preceding-sibling::*[self::entry or df:class(., 'topic/entry')])">
-        <xsl:value-of select="$new-count"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates select="(preceding-sibling::*[self::entry or df:class(., 'topic/entry')])[last()]" mode="count-cells">
-          <xsl:with-param name="current-count" select="$new-count"/>
-        </xsl:apply-templates>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <!-- Set up a pseudo-matrix to find the column of the current entry. Start with the first entry
-     in the first row. Progress to the end of the row, then start the next row; go until we find
-     the test cell (with id=$stop-id).
-     If an entry spans rows, add the cells that will be covered to $matrix.
-     If we get to an entry and its position is already filled in $matrix, then the entry is pushed
-     to the side. Add one to the column count and re-try the entry. -->
-  <xsl:template match="*" mode="find-matrix-column">
-    <xsl:param name="stop-id"/>
-    <xsl:param name="matrix" as="xs:string" select="''"/>
-    <xsl:param name="row-count" select="1" as="xs:integer"/>
-    <xsl:param name="col-count" select="1" as="xs:integer"/>
-    <xsl:param name="colspecElems" as="element()*" tunnel="yes" />
-    <!-- $current-position has the format [1:3] for row 1, col 3. Use to test if this cell is covered. -->
-    <xsl:variable name="current-position" select="concat('[', $row-count, ':', $col-count, ']')"/>
+    <xsl:param name="cellSet" as="element()*" tunnel="yes"/><!-- All cells created up to this point. -->
     
-    <xsl:choose>
-      <!-- If the current value is already covered, increment the column number and try again. -->
-      <xsl:when test="contains($matrix,$current-position)">
-        <xsl:apply-templates select="." mode="find-matrix-column">
-          <xsl:with-param name="stop-id" select="$stop-id"/>
-          <xsl:with-param name="matrix" select="$matrix" as="xs:string"/>
-          <xsl:with-param name="row-count" select="$row-count" as="xs:integer"/>
-          <xsl:with-param name="col-count" select="$col-count + 1" as="xs:integer"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- If this is the cell we are testing, return the current column number. -->
-      <xsl:when test="generate-id(.)=$stop-id">
-        <xsl:sequence select="$col-count"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- Figure out what the next column value will be. -->
-        <xsl:variable name="next-col-count" as="xs:integer">
-          <xsl:choose>
-            <xsl:when test="not(following-sibling::*[self::entry or df:class(., 'topic/entry')])">1</xsl:when>
-            <xsl:when test="incxgen:isColSpan(.,$colspecElems)">
-              <xsl:sequence select="$col-count + incxgen:numberColsSpanned(.,$colspecElems) - 1"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:sequence select="$col-count + 1"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>
-        <!-- Determine any values that need to be added to the matrix, if this entry spans rows. -->
-        <xsl:variable name="new-matrix-values">
-          <xsl:if test="@morerows">
-            <xsl:variable name="morerows" select="@morerows" as="xs:integer"/>
-            <xsl:call-template name="add-to-matrix">
-              <xsl:with-param name="start-row" select="$row-count" as="xs:integer"/>
-              <xsl:with-param name="end-row" select="$row-count + $morerows"  as="xs:integer"/>
-              <xsl:with-param name="start-col" select="$col-count" as="xs:integer"/>
-              <xsl:with-param name="end-col" as="xs:integer">
-                <xsl:choose>
-                  <xsl:when test="incxgen:isColSpan(.,$colspecElems)">
-                    <xsl:sequence select="$col-count + incxgen:numberColsSpanned(.,$colspecElems) - 1"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:sequence select="$col-count"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:with-param>
-            </xsl:call-template>
-          </xsl:if>
-        </xsl:variable>
-        <xsl:choose>
-          <!-- If there are more entries in this row, move to the next one. -->
-          <xsl:when test="following-sibling::entry">
-            <xsl:apply-templates mode="find-matrix-column" 
-              select="following-sibling::*[self::entry or df:class(., 'topic/entry')][1]">
-              <xsl:with-param name="stop-id" select="$stop-id"/>
-              <xsl:with-param name="matrix" select="concat($matrix, $new-matrix-values)" as="xs:string"/>
-              <xsl:with-param name="row-count" select="$row-count" as="xs:integer"/>
-              <xsl:with-param name="col-count" select="$next-col-count" as="xs:integer"/>
-            </xsl:apply-templates>
-          </xsl:when>
-          <!-- Otherwise, move to the first entry in the next row. -->
-          <xsl:otherwise>
-            <xsl:apply-templates mode="find-matrix-column" 
-              select="../following-sibling::*[self::row or df:class(., 'topic/row')][1]/
-              *[self::entry or df:class(., 'topic/entry')][1]">
-              <xsl:with-param name="stop-id" select="$stop-id"/>
-              <xsl:with-param name="matrix" select="concat($matrix, $new-matrix-values)" as="xs:string"/>
-              <xsl:with-param name="row-count" select="$row-count + 1" as="xs:integer"/>
-              <xsl:with-param name="col-count" select="1" as="xs:integer"/>
-            </xsl:apply-templates>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:variable name="tableZone" as="xs:string" 
+      select="name(../..)"
+    />
+    
+    <!-- Number of preceding rows -->
+    <xsl:variable name="parentRow" as="element()" select=".."/>
+    <xsl:variable name="rowCount" as="xs:integer"
+      select="count(ancestor::*[df:class(., 'topic/tgroup')]//*[df:class(., 'topic/row')][. &lt;&lt; $parentRow] )"
+    />
+
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] make-cell-set: topic/entry - $rowCount=<xsl:value-of select="$rowCount"/></xsl:message>
+    </xsl:if>    
+    
+    <xsl:variable name="entryElem" as="element()" select="."/>
+    <xsl:variable name="rowid" as="xs:string" select="generate-id(..)"/>
+    <xsl:variable name="numColsSpanned" as="xs:integer" 
+            select="incxgen:numberColsSpanned(.,$colspecElems)"
+    />
+    <xsl:variable name="moreRows" as="xs:integer" select="(@morerows, 0)[1]"/>
+    <xsl:variable name="numRowsSpanned" as="xs:integer"
+      select="$moreRows + 1"
+    />
+    <xsl:for-each select="1 to $numRowsSpanned">
+      <xsl:variable name="rownum" as="xs:integer" select="."/>
+      <xsl:for-each select="1 to $numColsSpanned">
+        <cell rowid="{$rowid}" 
+          cellid="{generate-id($entryElem)}" 
+          rownum="{$rowCount + $rownum}"
+          tableZone="{$tableZone}"
+          >
+          <xsl:value-of select="substring($entryElem, 1, 40)"/>
+        </cell>
+      </xsl:for-each>
+    </xsl:for-each>
   </xsl:template>
   
+  <xsl:template mode="make-cell-set" match="*[df:class(., 'topic/row')]">
+    <!-- This is recursive template, in that each row applies this template
+         to its next sibling. Note that if the parent is the thead,
+         needs to apply to the first child of the following tbody.
+      -->
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:param name="rowCount" as="xs:integer"/>
+    <xsl:apply-templates select="*" mode="#current">
+      <xsl:with-param name="rowCount" as="xs:integer" select="$rowCount"/>
+    </xsl:apply-templates>
+    <xsl:variable name="moreRows" as="xs:integer"
+      select="if (*/@morerows) then max(for $att in */@morerows return xs:integer($att)) else 0"
+    />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] make-cell-set: moreRows="<xsl:value-of select="$moreRows"/>"</xsl:message>
+    </xsl:if>
+    <xsl:variable name="rowsConsumed" as="xs:integer"
+      select="1 + $moreRows"
+    />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] make-cell-set: rowsConsumed="<xsl:value-of select="$rowsConsumed"/>"</xsl:message>
+    </xsl:if>
+    <xsl:apply-templates mode="#current"
+      select="
+      if (../self::*[df:class(., 'topic/thead')]) 
+         then (following-sibling::*[df:class(., 'topic/row')][1], 
+               ../../*[df:class(., 'topic/tbody')]/*[df:class(., 'topic/row')][1])[1]
+         else following-sibling::*[df:class(., 'topic/row')][1]"
+      >
+      <xsl:with-param name="doDebug" tunnel="yes" as="xs:boolean" select="$doDebug"/>
+      <xsl:with-param name="rowCount" as="xs:integer" select="$rowCount + $rowsConsumed"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template mode="make-cell-set make-matrix-table" match="*" priority="-1">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <!-- ======= End of make-matrix-table ============ -->
   <!-- This template returns values that must be added to the table matrix. Every cell in the box determined
      by start-row, end-row, start-col, and end-col will be added. First add every value from the first
      column. When past $end-row, move to the next column. When past $end-col, every value is added. -->
