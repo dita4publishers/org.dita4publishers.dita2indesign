@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_fmz_2nf_mp">
+  <title>Table Test</title>
+  <body>
+    <p>Test of table with multiple horizontal spans. The ICML </p>
+<table class="- topic/table " frame="all" id="rtab41.1">
+    <title class="- topic/title ">TABLE 41.1 – Maximum
+        disconnection times</title>
+    <tgroup class="- topic/tgroup " cols="9">
+        <colspec class="- topic/colspec " colname="c1" colnum="1" colwidth="50pt"/>
+        <colspec class="- topic/colspec " colname="c2" colnum="2" colwidth="50pt"/>
+        <colspec class="- topic/colspec " colname="c3" colnum="3" colwidth="62pt"/>
+        <colspec class="- topic/colspec " colname="c4" colnum="4" colwidth="50pt"/>
+        <colspec class="- topic/colspec " colname="c5" colnum="5" colwidth="62pt"/>
+        <colspec class="- topic/colspec " colname="c6" colnum="6" colwidth="50pt"/>
+        <colspec class="- topic/colspec " colname="c7" colnum="7" colwidth="62pt"/>
+        <colspec class="- topic/colspec " colname="c8" colnum="8" colwidth="50pt"/>
+        <colspec class="- topic/colspec " colname="c9" colnum="9" colwidth="62pt"/>
+        <thead class="- topic/thead ">
+            <row class="- topic/row ">
+                <entry align="center" class="- topic/entry " morerows="1"><b
+                    class="+ topic/ph hi-d/b ">System</b></entry>
+                <entry align="center" class="- topic/entry " nameend="c3" namest="c2"><b
+                    class="+ topic/ph hi-d/b ">50 V ˂ U<sub class="+ topic/ph hi-d/sub "
+                        >0</sub> ≤ 120 V seconds</b></entry>
+                <entry align="center" class="- topic/entry " nameend="c5" namest="c4"><b
+                    class="+ topic/ph hi-d/b ">120 V ˂ U<sub class="+ topic/ph hi-d/sub "
+                        >0</sub> ≤ 230 V seconds</b></entry>
+                <entry align="center" class="- topic/entry " nameend="c7" namest="c6"><b
+                    class="+ topic/ph hi-d/b ">230 V ˂ U<sub class="+ topic/ph hi-d/sub "
+                        >0</sub> ≤ 400 V seconds</b></entry>
+                <entry align="center" class="- topic/entry " nameend="c9" namest="c8"><b
+                    class="+ topic/ph hi-d/b ">U<sub class="+ topic/ph hi-d/sub ">0</sub> ˃
+                    400 V seconds</b></entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >a.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >d.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >a.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >d.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >a.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >d.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >a.c.</b></entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >d.c.</b></entry>
+            </row>
+        </thead>
+        <tbody class="- topic/tbody ">
+            <row class="- topic/row ">
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >TN</b></entry>
+                <entry align="center" class="- topic/entry ">0.8</entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >NOTE</b></entry>
+                <entry align="center" class="- topic/entry ">0.4</entry>
+                <entry align="center" class="- topic/entry ">5</entry>
+                <entry align="center" class="- topic/entry ">0.2</entry>
+                <entry align="center" class="- topic/entry ">0.4</entry>
+                <entry align="center" class="- topic/entry ">0.1</entry>
+                <entry align="center" class="- topic/entry ">0.1</entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >TT</b></entry>
+                <entry align="center" class="- topic/entry ">0.3</entry>
+                <entry align="center" class="- topic/entry "><b class="+ topic/ph hi-d/b "
+                    >NOTE</b></entry>
+                <entry align="center" class="- topic/entry ">0.2</entry>
+                <entry align="center" class="- topic/entry ">0.4</entry>
+                <entry align="center" class="- topic/entry ">0.07</entry>
+                <entry align="center" class="- topic/entry ">0.2</entry>
+                <entry align="center" class="- topic/entry ">0.04</entry>
+                <entry align="center" class="- topic/entry ">0.1</entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="left" class="- topic/entry " nameend="c9" namest="c1">
+                    <p class="- topic/p " outputclass="table_footnote">Where, in a TT system,
+                        disconnection is achieved by an overcurrent protective device and
+                        protective equipotential bonding is connected to all the
+                        extraneous-conductive-parts within the installation in accordance with
+                        Regulation 411.3.1.2, the maximum disconnection times applicable to a TN
+                        system may be used.</p>
+                </entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="left" class="- topic/entry " nameend="c9" namest="c1">
+                    <p class="- topic/p " outputclass="table_footnote">U<sub
+                        class="+ topic/ph hi-d/sub ">0</sub> is the nominal a.c. rms or d.c.
+                        line voltage to Earth.</p>
+                </entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="left" class="- topic/entry " nameend="c9" namest="c1">
+                    <p class="- topic/p " outputclass="table_footnote">Where compliance with
+                        this regulation is provided by an RCD, the disconnection times in
+                        accordance with Table 41.1 relate to prospective residual fault currents
+                        significantly higher than the rated residual operating current of the
+                        RCD.</p>
+                </entry>
+            </row>
+            <row class="- topic/row ">
+                <entry align="left" class="- topic/entry " nameend="c9" namest="c1"><note
+                    class="- topic/note " id="rtab41.1_note" type="note">Disconnection is not
+                    required for protection against electric shock but may be required for
+                    other reasons, such as protection against thermal effects.</note></entry>
+            </row>
+        </tbody>
+    </tgroup>
+</table>    
+  </body>
+</topic>

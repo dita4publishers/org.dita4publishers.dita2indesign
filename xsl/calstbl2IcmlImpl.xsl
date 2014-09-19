@@ -73,9 +73,10 @@
       BodyRowCount="{$numBodyRows}" 
       ColumnCount="{$numCols}" 
       Self="rc_{generate-id()}"><xsl:text>&#x0a;</xsl:text>
-      <xsl:apply-templates select="." mode="crow"/>
+      <xsl:apply-templates select="." mode="crow">
         <xsl:with-param name="matrixTable" as="element()" tunnel="yes" select="$matrixTable"/>
-      
+      </xsl:apply-templates>
+       
       <!-- replace this apply templates with function to generate ccol elements.
         This apply-templates generates a ccol for every cell; just need one ccol for each column
         <xsl:apply-templates select="row" mode="ccol"/> -->
