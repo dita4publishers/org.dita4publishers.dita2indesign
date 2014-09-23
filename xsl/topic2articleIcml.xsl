@@ -129,13 +129,6 @@
     <xsl:message> + [DEBUG] topic2article.xsl: Root topic processing complete.</xsl:message> 
   </xsl:template>
   
-  <xsl:template match="*" mode="result-docs">
-    <!--
-    <xsl:message> + [DEBUG] topic2article.xsl: in result-docs catch-all: <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/>.</xsl:message>
-    -->
-    <xsl:apply-templates mode="#current" select="*"/>
-  </xsl:template>
-  
   <xsl:template match="text()" mode="result-docs"/>
   
   
