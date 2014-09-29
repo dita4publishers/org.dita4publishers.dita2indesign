@@ -613,48 +613,6 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:function name="incxgen:cellHasMoreRowsToSpan" as="xs:boolean">
-    <!-- Determine if the cell spans past the current row. -->
-    <xsl:param name="cell" as="element()"/>
-    <xsl:param name="rowNum" as="xs:integer"/><!-- The current row number -->
-    <!--
-    let $moreRows := xs:integer($cell/@morerows)
-                  let $homeRowNumber = incxgen:getRowNumber($cell)
-                  return if ($rowCount - $homRowNumber gt $moreRows) then () else $cell
-                  -->
-    <xsl:variable name="moreRows" as="xs:integer" select="$cell/@morerows"/>
-    <xsl:variable name="homeRowNumber" as="xs:integer"
-      select="incxgen:getRowNumber($cell)"      
-    />
-    <xsl:variable name="result" as="xs:boolean"
-      select="$rowNum - $homeRowNumber gt $moreRows"
-    />
-    <xsl:sequence select="$result"/>
-  </xsl:function>
-  
-  <xsl:function name="incxgen:getRowNumber" as="xs:integer">
-    <!-- Get the ordinal position of a row within a table, counting
-         both header and body rows.
-         
-         Parameter can be an entry or row element.
-      -->
-    <xsl:param name="elem" as="element()"/>
-    <xsl:variable name="rowElem" as="element()"
-      select="if (df:class($elem, 'topic/entry')) then $elem/..
-         else if (df:class($elem, 'topic/row')) then $elem else ()"
-    />
-    <xsl:variable name="result" as="xs:integer?"
-    >
-      <xsl:for-each select="$elem">
-        <xsl:number count="*[df:class(., 'topic/row')]"
-          from="*[df:class(., 'topic/tgroup')]"
-          level="any"
-        />
-      </xsl:for-each>
-    </xsl:variable>    
-    <xsl:sequence select="($result, 0)[1]"/>
-  </xsl:function>
-  
   <xsl:function name="incxgen:isColSpan" as="xs:boolean">
     <xsl:param name="elem" as="element()"/>
     <xsl:param name="colspecElems" as="element()*"/>
