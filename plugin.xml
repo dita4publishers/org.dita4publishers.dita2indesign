@@ -11,4 +11,8 @@
   <feature extension="dita.conductor.transtype.check" value="indesign" type="txt"/>
   <feature extension="dita.conductor.target.relative" value="build.xml" type="file"/>
 
+  <!-- New way of specifying metadata with parameters contributed by the transtype:
+        https://github.com/dita-ot/dita-ot/issues/1757
+   -->
+  <transtype name="indesign" extends="d4pCommons" desc="InDesign (DITA 4 Publishers)"/>
 </plugin>
