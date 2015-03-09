@@ -104,11 +104,6 @@
    
     <xsl:message> + [INFO] topic2icmlImpl.xsl: incopyFileUri="<xsl:sequence select="$incopyFileUri"/>"</xsl:message>
 
-    <!-- First, generate any result docs from subelements -->
-    <xsl:message> + [INFO] topic2icmlImpl.xsl: Applying result-docs mode to children of root topic...</xsl:message>
-    <xsl:apply-templates select="*" mode="result-docs">
-      <xsl:with-param name="articleType" select="name(.)" tunnel="yes"/>           
-    </xsl:apply-templates>
 
     <xsl:variable name="mainArticle" as="node()*">
       <xsl:call-template name="makeInCopyArticle">
@@ -128,8 +123,5 @@
     </xsl:call-template>
     <xsl:message> + [DEBUG] topic2article.xsl: Root topic processing complete.</xsl:message> 
   </xsl:template>
-  
-  <xsl:template match="text()" mode="result-docs"/>
-  
   
 </xsl:stylesheet>

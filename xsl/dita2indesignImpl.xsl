@@ -16,7 +16,7 @@
        The direct output of the transform is an XML manifest file that
        lists the InCopy articles generated.
     
-       Copyright (c) 2013 DITA for Publishers
+       Copyright (c) 2013, 2015 DITA for Publishers
     
     Parameters:
     
@@ -37,8 +37,8 @@
   
 
   <xsl:param name="platform" select="'unknown'" as="xs:string"/>
-  <xsl:param name="outdir" select="./indesign"/>
-  <xsl:param name="tempdir" select="./temp"/>
+  <xsl:param name="outdir" select="'./indesign'"/>
+  <xsl:param name="tempdir" select="'./temp'"/>
   <xsl:param name="titleOnlyTopicClassSpec" select="'- topic/topic '" as="xs:string"/>
   
   <xsl:param name="titleOnlyTopicTitleClassSpec" select="'- topic/title '" as="xs:string"/>
@@ -47,7 +47,9 @@
   <xsl:variable name="chunkLevelNum" select="number($chunkLevel) idiv 1" as="xs:integer"/>
   
   <xsl:param name="debug" select="'false'"/>
-  <xsl:variable name="debugBoolean" select="if ($debug = 'true') then true() else false()" as="xs:boolean"/>
+  <xsl:variable name="debugBoolean" 
+    select="matches($debug,'true|1|on|yes', 'i')" as="xs:boolean"
+  />
   
   <!-- 
     The direct output of the transform is an XML manifest file
@@ -108,6 +110,9 @@
   </xsl:template>
   
   <xsl:template match="/*[df:class(., 'map/map')]">
+    <xsl:choose>
+      <xsl:when test="matches($c"></xsl:when>
+    </xsl:choose>
     <xsl:apply-templates mode="process-map"/>
   </xsl:template>
 

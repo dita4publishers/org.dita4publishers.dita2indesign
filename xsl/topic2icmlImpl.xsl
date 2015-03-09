@@ -51,50 +51,50 @@
     <!-- The topicref that points to this topic -->
     <xsl:param name="topicref" as="element()?" tunnel="yes"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
-    
-    <!-- NOTE: This template is overridden by sample template in topic2articleIcml.xsl -->
-    
+
+    <xsl:variable name="isChunkRoot" as="xs:boolean"
+      select="local:isChunkRoot(., $topicref)"
+    />
     <xsl:if test="$debugBoolean">
       <xsl:message> + [DEBUG] topic2icmlImpl.xsl: Processing root topic</xsl:message>
+      <xsl:message> + [DEBUG] topic2icmlImpl.xsl: isChunkRoot=<xsl:value-of select="$isChunkRoot"/></xsl:message>
     </xsl:if>
-    <!-- Create a new output InCopy article. 
-      
-      NOTE: This code assumes that all chunking has been performed
-      so that each document-root topic maps to one result
-      InCopy article and all nested topics are output as
-      part of the same story. This behavior can be
-      overridden by providing templates that match on
-      specific topic types or output classes.
-    -->
     
-    <xsl:variable name="articleUrl" as="xs:string"
-      select="local:getArticleUrlForTopic(.)"
-    />
-    <xsl:variable name="articlePath" as="xs:string"
-      select="relpath:newFile($outputPath, $articleUrl)"
-    />
-    <xsl:variable name="effectiveArticleType" as="xs:string"
-      select="if ($articleType) then $articleType else name(.)"
-    />
-    <xsl:if test="$debugBoolean">
-      <xsl:message> + [DEBUG] effectiveArticleType="<xsl:sequence select="$effectiveArticleType"/>"</xsl:message>
-    </xsl:if>
     
     <!-- First, generate any result docs from subelements -->
-    <xsl:message> + [INFO] topic2icmlImpl.xsl: Applying result-docs mode to children of root topic...</xsl:message>
-    <xsl:apply-templates select="*" mode="result-docs"/>
-    
-    <xsl:message> + [INFO] topic2icmlImpl.xsl: Generating InCopy article "<xsl:sequence select="$articlePath"/>"...</xsl:message>
-    <!-- Now generate the result document for the root topic -->
-    <xsl:result-document href="{$articlePath}" format="icml">
-      <xsl:call-template name="makeInCopyArticle">
-        <xsl:with-param name="articleType" select="$effectiveArticleType" as="xs:string" tunnel="yes"/>
-        <xsl:with-param name="styleCatalog" select="$styleCatalog" as="node()*"/>
-      </xsl:call-template>
-    </xsl:result-document>    
-    <xsl:call-template name="constructManifestFileEntry">
-      <xsl:with-param name="incopyFileUri" select="$articlePath" as="xs:string"/>
-    </xsl:call-template>
+    <xsl:choose>
+      <xsl:when test="$isChunkRoot">
+        <xsl:variable name="articleUrl" as="xs:string"
+          select="local:getArticleUrlForTopic(.)"
+        />
+        <xsl:variable name="articlePath" as="xs:string"
+          select="relpath:newFile($outputPath, $articleUrl)"
+        />
+        <xsl:variable name="effectiveArticleType" as="xs:string"
+          select="if ($articleType) then $articleType else name(.)"
+        />
+        <xsl:if test="$debugBoolean">
+          <xsl:message> + [DEBUG] effectiveArticleType="<xsl:sequence select="$effectiveArticleType"/>"</xsl:message>
+        </xsl:if>
+        <xsl:message> + [INFO] topic2icmlImpl.xsl: Generating InCopy article "<xsl:sequence select="$articlePath"/>"...</xsl:message>
+        <!-- Now generate the result document for the root topic -->
+        <local:result-document href="{$articlePath}" format="icml">
+          <xsl:call-template name="makeInCopyArticle">
+            <xsl:with-param name="articleType" select="$effectiveArticleType" as="xs:string" tunnel="yes"/>
+            <xsl:with-param name="styleCatalog" select="$styleCatalog" as="node()*"/>
+          </xsl:call-template>         
+        </local:result-document>
+        <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map"/>
+        <xsl:call-template name="constructManifestFileEntry">
+          <xsl:with-param name="incopyFileUri" select="$articlePath" as="xs:string"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Just generate the output. -->
+        <xsl:apply-templates/>                  
+        <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map"/>
+      </xsl:otherwise>
+    </xsl:choose>
     
   </xsl:template>
   
@@ -415,8 +415,10 @@
     <file uri="{$incopyFileUri}"/>&#x0020;
   </xsl:template>
   
+  <!-- NOTE: mode result-docs is obsolete. -->
   <xsl:template match="*" mode="result-docs">
-    <xsl:apply-templates mode="#current" select="*"/>
+    <xsl:message> - [WARN] Matched <xsl:value-of select="concat(name(..), '/', name(.))"/> in mode "result-docs". Mode result-docs is obsolete and should not be used.</xsl:message>
+    <xsl:next-match/>
   </xsl:template>
   
   <xsl:template match="text()" mode="result-docs"/>
