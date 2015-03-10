@@ -79,17 +79,17 @@
         </xsl:if>
         <xsl:message> + [INFO] topic2icmlImpl.xsl: Generating InCopy article "<xsl:sequence select="$articlePath"/>"...</xsl:message>
         <!-- Now generate the result document for the root topic -->
+        <xsl:variable name="descendantTopicParagraphs" as="node()*">
+          <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
+        </xsl:variable>
         <local:result-document href="{$articlePath}" format="icml">
           <xsl:call-template name="makeInCopyArticle">
             <xsl:with-param name="articleType" select="$effectiveArticleType" as="xs:string" tunnel="yes"/>
             <xsl:with-param name="styleCatalog" select="$styleCatalog" as="node()*"/>
+            <xsl:with-param name="trailingParagraphs" as="node()*" select="$descendantTopicParagraphs"/>
           </xsl:call-template>
-          <!-- We nest these to ensure that all content goes out into a result-document even if there's
-               a bug in the chunk handling.
-            -->
-          <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-          </xsl:apply-templates>
         </local:result-document>
       </xsl:when>
       <xsl:otherwise>

@@ -109,7 +109,6 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="isRoot" as="xs:boolean" select="true()" tunnel="yes"/>
     
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
     <xsl:choose>
       <xsl:when test="$isRoot">
         <xsl:apply-templates select="." mode="report-parameters"/>
@@ -223,8 +222,6 @@
         </xsl:otherwise>
       </xsl:choose>      
     </xsl:variable>
-    
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
     
     <xsl:if test="$doDebug">
       <xsl:variable name="tempFileURI" as="xs:string" 
