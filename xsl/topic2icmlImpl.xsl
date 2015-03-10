@@ -49,14 +49,15 @@
   
   <xsl:template match="/*[df:class(., 'topic/topic')]" priority="5">
     <!-- The topicref that points to this topic -->
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="topicref" as="element()?" tunnel="yes"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
-
+    
     <xsl:variable name="isChunkRoot" as="xs:boolean"
       select="local:isChunkRoot(., $topicref)"
     />
-    <xsl:if test="$debugBoolean">
-      <xsl:message> + [DEBUG] topic2icmlImpl.xsl: Processing root topic</xsl:message>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topic2icmlImpl.xsl: Processing root topic <xsl:value-of select="document-uri(root(.))"/></xsl:message>
       <xsl:message> + [DEBUG] topic2icmlImpl.xsl: isChunkRoot=<xsl:value-of select="$isChunkRoot"/></xsl:message>
     </xsl:if>
     
@@ -82,23 +83,33 @@
           <xsl:call-template name="makeInCopyArticle">
             <xsl:with-param name="articleType" select="$effectiveArticleType" as="xs:string" tunnel="yes"/>
             <xsl:with-param name="styleCatalog" select="$styleCatalog" as="node()*"/>
-          </xsl:call-template>         
+          </xsl:call-template>
+          <!-- We nest these to ensure that all content goes out into a result-document even if there's
+               a bug in the chunk handling.
+            -->
+          <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
         </local:result-document>
-        <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map"/>
         <xsl:call-template name="constructManifestFileEntry">
           <xsl:with-param name="incopyFileUri" select="$articlePath" as="xs:string"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <!-- Just generate the output. -->
-        <xsl:apply-templates/>                  
-        <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map"/>
+        <xsl:apply-templates>
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>                  
+        <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicref')]" mode="process-map">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
     
   </xsl:template>
   
   <xsl:template name="makeInCopyArticle">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="content" as="node()*"/>
     <xsl:param name="leadingParagraphs" as="node()*"/>
     <xsl:param name="trailingParagraphs" as="node()*"/>
@@ -106,7 +117,7 @@
     <!-- The style catalog can be the styles.xml file from an IDML package -->
     <xsl:param name="styleCatalog" as="node()*"/>
     
-    <xsl:if test="true() or $debugBoolean">
+    <xsl:if test="$debugBoolean">
       <xsl:message> + [DEBUG] makeInCopyArticle: Article type is "<xsl:sequence select="$articleType"/>"</xsl:message>
     </xsl:if>
     
@@ -123,7 +134,9 @@
       -->
     <xsl:variable name="articleContents" as="node()*">
       <xsl:sequence select="$leadingParagraphs"/>
-      <xsl:apply-templates select="$effectiveContents"/>
+      <xsl:apply-templates select="$effectiveContents">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
       <xsl:sequence select="$trailingParagraphs"/>      
     </xsl:variable>
     
@@ -160,7 +173,9 @@
           <Properties>
             <Contents>
               <xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
-            <xsl:apply-templates mode="XMP" select="/*"/>
+            <xsl:apply-templates mode="XMP" select="/*">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            </xsl:apply-templates>
             <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
             </Contents>
           </Properties>
@@ -177,6 +192,7 @@
     ">
     <!-- Correctly handle paragraphs that contain mixed content with block-creating elements.
       -->
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     
     <xsl:variable name="pStyle" select="e2s:getPStyleForElement(., $articleType)" as="xs:string"/>
@@ -185,7 +201,9 @@
       group-adjacent="if (self::*) then if (df:isBlock(.)) then 'block' else 'text' else 'text'">
       <xsl:choose>
         <xsl:when test="self::* and df:isBlock(.)">
-          <xsl:apply-templates select="current-group()"/>
+          <xsl:apply-templates select="current-group()">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="makeBlock-cont">
@@ -199,15 +217,18 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/related-links')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Suppress by default -->
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/table') or df:class(., 'topic/simpletable')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Char="16" Self="rc_u643cinsfbb" -->
     <xsl:processing-instruction name="aid">Char="16" Self="rc_<xsl:value-of select="generate-id(.)"/>Anchor"</xsl:processing-instruction>  
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/image')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- FIXME: The Link URL can be relative as long as it still starts
          with file:/ (and CS6 and older only supports file:/ URLs as far
          as I can determine).
@@ -278,14 +299,20 @@
     </Rectangle>
   </xsl:template>
   
-  <xsl:template match="text() | *" mode="XMP"/><!-- Suppress everything by default in XMP mode -->
+  <xsl:template match="text() | *" mode="XMP">
+    <!-- Suppress everything by default in XMP mode -->
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
+  </xsl:template>
 
   <xsl:template match="*[df:class(., 'topic/lq')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     <xsl:choose>
       <xsl:when test="df:hasBlockChildren(.)">
         <!-- FIXME: Handle any non-empty text before the first paragraph -->
-         <xsl:apply-templates/>
+         <xsl:apply-templates>
+           <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="makeBlock-cont">
@@ -296,14 +323,20 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/fig')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Override this template to put the title before or after the 
          figure content.
       -->
-    <xsl:apply-templates select="*[df:class(., 'topic/title')]"/>
-    <xsl:apply-templates select="*[not(df:class(., 'topic/title'))]"/>    
+    <xsl:apply-templates select="*[df:class(., 'topic/title')]">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+    <xsl:apply-templates select="*[not(df:class(., 'topic/title'))]">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>    
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/section')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     <xsl:if test="@spectitle">
       <xsl:call-template name="makeBlock-cont">
@@ -313,7 +346,9 @@
         </xsl:with-param>
       </xsl:call-template>
     </xsl:if>
-    <xsl:apply-templates/>
+    <xsl:apply-templates>
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template 
@@ -321,6 +356,7 @@
     *[df:class(., 'topic/dt')] |
     *[df:class(., 'topic/title')]
     ">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     
     <!-- Elements that are not inherently block elements but are rendered as 
@@ -336,6 +372,7 @@
     *[df:class(., 'topic/li')] |
     *[df:class(., 'topic/dd')]
     ">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     
     <!-- FIXME: For LI, LQ, DD, etc., need general logic for handling
@@ -348,6 +385,7 @@
   </xsl:template>
   
   <xsl:template match="*[df:isBlock(.)]" priority="-0.5">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     
     <xsl:call-template name="makeBlock-cont">
@@ -356,13 +394,17 @@
   </xsl:template>
   
   <xsl:template match="*[df:class(., 'topic/topic')]">
-    <xsl:apply-templates/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
+    <xsl:apply-templates>
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template 
     match="
     *[df:class(., 'topic/prolog')]
     ">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Ignored in default mode -->
   </xsl:template>
     
@@ -372,6 +414,7 @@
     *[df:class(., 'topic/bodydiv')] |
     *[df:class(., 'topic/sectiondiv')] 
     ">    
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="articleType" as="xs:string" tunnel="yes"/>
     
     <xsl:choose>
@@ -381,7 +424,9 @@
         </xsl:call-template>        
       </xsl:when>
       <xsl:otherwise><!-- No direct text, just apply templates -->
-        <xsl:apply-templates/>
+        <xsl:apply-templates>
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
     
@@ -395,33 +440,44 @@
     *[df:class(., 'topic/dl')] |
     *[df:class(., 'topic/dlentry')]
     ">
-    <xsl:apply-templates/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
+    <xsl:apply-templates>
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:template mode="generate-styles" match="idsc:InDesign_Style_Catalog">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Simply copy the styles in the catalog to the output -->
     <xsl:sequence select="node()"/>
   </xsl:template>
   
-  <xsl:template match="RSUITE:*" mode="#all" priority="10"/><!-- Ignore in all modes -->
+  <xsl:template match="RSUITE:*" mode="#all" priority="10">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>    
+  </xsl:template><!-- Ignore in all modes -->
     
   <xsl:template mode="#default" match="*" priority="-1">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:message> + [WARNING] topic2icmlImpl (default mode): Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence 
       select="concat(name(.), ' [', normalize-space(@class), ']')"/></xsl:message>
   </xsl:template>
   
   <xsl:template name="constructManifestFileEntry">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="incopyFileUri" as="xs:string"/>
     <file uri="{$incopyFileUri}"/>&#x0020;
   </xsl:template>
   
   <!-- NOTE: mode result-docs is obsolete. -->
   <xsl:template match="*" mode="result-docs">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:message> - [WARN] Matched <xsl:value-of select="concat(name(..), '/', name(.))"/> in mode "result-docs". Mode result-docs is obsolete and should not be used.</xsl:message>
     <xsl:next-match/>
   </xsl:template>
   
-  <xsl:template match="text()" mode="result-docs"/>
+  <xsl:template match="text()" mode="result-docs">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>    
+  </xsl:template>
 
   <!--
     The following implements the d4pSidebarAnchor. With the use of keys, it suppresses the location of the anchoredObject (e.g., a sidebar) and instead copies it to the result tree in the location of the d4pSidebarAnchor. Currently commented out pending recommended changes to the d4pSidebarAnchor element. Code does work and is in use at Human Kinetics -->
@@ -431,14 +487,17 @@
   <xsl:key name="kAnchoredObject" match="*" use="@id"/>
   
   <xsl:template match="*[df:class(.,'topic/xref d4p-formatting-d/d4pSidebarAnchor')]" priority="20">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:apply-templates select=
       "key('kAnchoredObject', @otherprops)">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
       <xsl:with-param name="useNextMatch" select="'true'" as="xs:string" />
     </xsl:apply-templates>
     
   </xsl:template>
   
   <xsl:template match="*[key('kObjectAnchor', @id)]" priority="20">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <xsl:param name="useNextMatch" select="'false'" as="xs:string" />
     <xsl:choose>
       <xsl:when test="$useNextMatch='true'">
