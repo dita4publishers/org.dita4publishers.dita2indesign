@@ -195,13 +195,14 @@
       -->
     <xsl:message> + [INFO] Stage 1: Processing map to construct intermediate ICML data file with result documents marked.</xsl:message>
     
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
     <xsl:variable name="resolvedMap" as="node()*">
-      <xsl:apply-templates select="." mode="resolve-map">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-        <xsl:with-param name="parentHeadLevel" as="xs:integer" tunnel="yes" select="0"/>
-        <xsl:with-param name="map-base-uri" as="xs:string" tunnel="yes" select="document-uri(root(.))"/>
-      </xsl:apply-templates>
+      <xsl:document>
+        <xsl:apply-templates select="." mode="resolve-map">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          <xsl:with-param name="parentHeadLevel" as="xs:integer" tunnel="yes" select="0"/>
+          <xsl:with-param name="map-base-uri" as="xs:string" tunnel="yes" select="document-uri(root(.))"/>
+        </xsl:apply-templates>
+      </xsl:document>
     </xsl:variable>
     
     <xsl:if test="$doDebug">
@@ -212,8 +213,7 @@
       </xsl:result-document>
         
     </xsl:if>
-
-    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
+    
     <xsl:variable name="icmlDataWithResultDocsMarked" as="node()*">
       <xsl:choose>
         <xsl:when test="matches($effectiveChunkStrategy, 'perMap', 'i')">
@@ -260,22 +260,9 @@
     </xsl:apply-templates>
   </xsl:template>
 
-  <xsl:template mode="process-map" match="*[df:class(.,'map/map')]">    
-    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
-    <xsl:apply-templates mode="#current">
-      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-    </xsl:apply-templates>
-  </xsl:template>
-
-  <xsl:template mode="process-map #default" match="*[df:class(.,'map/map')]/*[df:class(.,'topic/title')]">
-    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
-    <!-- Map titles for submaps are always suppressed -->    
-  </xsl:template>
-  
   <xsl:template mode="process-map" match="*[df:class(., 'map/topicref')][@href]">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Handle references to topics -->
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
     <xsl:variable name="targetTopic" select="df:resolveTopicRef(.)" as="element()?"/>
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] topicref[@href]: targetTopic="<xsl:value-of select="name($targetTopic)"/>"</xsl:message>

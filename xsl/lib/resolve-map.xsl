@@ -63,7 +63,8 @@
       </xsl:copy>
     <xsl:message> + [INFO]</xsl:message>
     <xsl:message> + [INFO] resolve-map(): Resolved map constructed.</xsl:message>
-    <xsl:message> + [INFO]</xsl:message>
+    <xsl:message> + [INFO]
+</xsl:message>
   </xsl:template>
   
   <xsl:template mode="resolve-map" match="@*">
@@ -204,7 +205,7 @@
           <xsl:if test="not(df:class($refTarget, 'map/map'))">
             <xsl:message> + [WARNING] resolve-map(): Topicref with format='ditamap' did not resolve to a map, got <xsl:sequence select="name($refTarget)"/> (class=<xsl:sequence select="$refTarget/@class"/>)</xsl:message>
             <xsl:copy>
-              <xsl:apply-templates select="@* | node()">
+              <xsl:apply-templates select="@* | node()" mode="#current">
                 <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
               </xsl:apply-templates>           
             </xsl:copy>
