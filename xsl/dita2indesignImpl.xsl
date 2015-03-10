@@ -56,10 +56,13 @@
     
       'true' - Turns debugging on
       'false' - Turns it off (the default)
+      
+      FIXME: Handle @chunk attributes on topicrefs
     =====================================================================-->
     
   <xsl:include href="topic2icmlImpl.xsl"/>
   <xsl:include href="generateResultDocs.xsl"/>
+  <xsl:include href="lib/resolve-map.xsl"/>
   
   <xsl:param name="WORKDIR" as="xs:string" select="''"/>
   <xsl:param name="PATH2PROJ" as="xs:string" select="''"/>
@@ -191,12 +194,31 @@
                   
       -->
     <xsl:message> + [INFO] Stage 1: Processing map to construct intermediate ICML data file with result documents marked.</xsl:message>
+    
+    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
+    <xsl:variable name="resolvedMap" as="node()*">
+      <xsl:apply-templates select="." mode="resolve-map">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        <xsl:with-param name="parentHeadLevel" as="xs:integer" tunnel="yes" select="0"/>
+        <xsl:with-param name="map-base-uri" as="xs:string" tunnel="yes" select="document-uri(root(.))"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
+    <xsl:if test="$doDebug">
+      <xsl:variable name="tempMapURI" as="xs:string" select="relpath:newFile($outputPath, 'resolved-map.ditamap')"/>
+      <xsl:message> + [DEBUG] Writing resolved map to "<xsl:value-of select="$tempMapURI"/>" </xsl:message>
+      <xsl:result-document href="{$tempMapURI}">
+        <xsl:sequence select="$resolvedMap"/>
+      </xsl:result-document>
+        
+    </xsl:if>
 
+    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
     <xsl:variable name="icmlDataWithResultDocsMarked" as="node()*">
       <xsl:choose>
         <xsl:when test="matches($effectiveChunkStrategy, 'perMap', 'i')">
           <xsl:variable name="articleIcmlData" as="node()*">
-            <xsl:apply-templates mode="process-map">
+            <xsl:apply-templates mode="process-map" select="$resolvedMap/*/*">
               <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
             </xsl:apply-templates>
           </xsl:variable>
@@ -216,7 +238,7 @@
           </local:result-document>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates mode="process-map">
+          <xsl:apply-templates mode="process-map" select="$resolvedMap/*/*">
             <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
           </xsl:apply-templates>
         </xsl:otherwise>
@@ -253,10 +275,20 @@
   <xsl:template mode="process-map" match="*[df:class(., 'map/topicref')][@href]">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
     <!-- Handle references to topics -->
+    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
     <xsl:variable name="targetTopic" select="df:resolveTopicRef(.)" as="element()?"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topicref[@href]: targetTopic="<xsl:value-of select="name($targetTopic)"/>"</xsl:message>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="not($targetTopic)">
         <xsl:message> + [ERROR] Failed to resolve topicref to URL "<xsl:sequence select="string(@href)"/>".</xsl:message>
+      </xsl:when>
+      <xsl:when test="df:class($targetTopic, 'map/map')">
+        <xsl:if test="$doDebug">
+          <xsl:message> + [DEBUG] topicref[@href]: Got a map, applying templates to its topicref children...</xsl:message>
+        </xsl:if>
+        <xsl:apply-templates select="$targetTopic/*[df:class(., 'map/topicref')]" mode="#current"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:message> + [INFO] process-map: Processing topic <xsl:sequence select="document-uri(root($targetTopic))"/> in default mode...</xsl:message>
@@ -264,6 +296,7 @@
              the topic doc, so we don't have each topic match the "/"
              template.
           -->
+        <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
         <xsl:apply-templates select="$targetTopic">
           <!-- Give the topic access to its referencing topicref so it can know where it 
                lives in the map structure, what the topicref properties were, etc.
