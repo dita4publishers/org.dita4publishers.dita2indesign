@@ -91,9 +91,6 @@
             <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
           </xsl:apply-templates>
         </local:result-document>
-        <xsl:call-template name="constructManifestFileEntry">
-          <xsl:with-param name="incopyFileUri" select="$articlePath" as="xs:string"/>
-        </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <!-- Just generate the output. -->

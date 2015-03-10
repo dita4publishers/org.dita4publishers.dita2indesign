@@ -15,6 +15,10 @@
     <xsl:result-document href="{@href}" format="{@format}">
       <xsl:apply-templates mode="#current" select="node() except (local:result-document)"/>
     </xsl:result-document>
+    <xsl:call-template name="constructManifestFileEntry">
+      <xsl:with-param name="incopyFileUri" select="@href" as="xs:string"/>
+    </xsl:call-template>
+
   </xsl:template>
 
   <xsl:template mode="generate-result-docs" match="local:result-document">
@@ -24,6 +28,9 @@
     <xsl:result-document href="{@href}">
       <xsl:apply-templates mode="#current" select="node() except (local:result-document)"/>
     </xsl:result-document>
+    <xsl:call-template name="constructManifestFileEntry">
+      <xsl:with-param name="incopyFileUri" select="@href" as="xs:string"/>
+    </xsl:call-template>
   </xsl:template>
   
   <xsl:template mode="generate-result-docs" 
