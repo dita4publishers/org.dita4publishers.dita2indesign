@@ -89,8 +89,6 @@
                then $sidebarChunkStrategy
                else 'normal'"
   />
-  <xsl:param name="chunkLevel" select="'0'"/>
-  <xsl:variable name="chunkLevelNum" select="number($chunkLevel) idiv 1" as="xs:integer"/>
   
   <xsl:param name="debug" select="'false'"/>
   <xsl:variable name="debugBoolean" 
@@ -144,6 +142,9 @@
       + outdir          = "<xsl:sequence select="$outdir"/>"
       + tempdir         = "<xsl:sequence select="$tempdir"/>"
       + linksPath       = "<xsl:sequence select="$linksPath"/>"
+      + chunkStrategy   = "<xsl:sequence select="$chunkStrategy"/>"
+      + sidebarChunkStrategy = "<xsl:sequence select="$sidebarChunkStrategy"/>"
+      
       
       + WORKDIR         = "<xsl:sequence select="$WORKDIR"/>"
       + PATH2PROJ       = "<xsl:sequence select="$PATH2PROJ"/>"
@@ -193,7 +194,7 @@
                   the result documents.
                   
       -->
-    <xsl:message> + [INFO] Stage 1: Processing map to construct intermediate ICML data file with result documents marked.</xsl:message>
+    <xsl:message> + [INFO] Stage 1: Processing map to construct intermediate ICML data file with result documents marked...</xsl:message>
     
     <xsl:variable name="resolvedMap" as="node()*">
       <xsl:document>
@@ -238,9 +239,11 @@
           </local:result-document>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates mode="process-map" select="$resolvedMap/*/*">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-          </xsl:apply-templates>
+          <local:root>
+            <xsl:apply-templates mode="process-map" select="$resolvedMap/*/*">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            </xsl:apply-templates>
+          </local:root>
         </xsl:otherwise>
       </xsl:choose>      
     </xsl:variable>
@@ -253,9 +256,14 @@
         <xsl:sequence select="$icmlDataWithResultDocsMarked"/>
       </xsl:result-document>
     </xsl:if>
-    <xsl:message> + [INFO] Stage 2: Generating result documents</xsl:message>
+    <xsl:message> + [INFO] Stage 2: Generating result documents...</xsl:message>
     <xsl:apply-templates select="$icmlDataWithResultDocsMarked"
       mode="generate-result-docs">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+    <xsl:message> + [INFO] Stage 3: Generating manifest entries...</xsl:message>
+    <xsl:apply-templates select="$icmlDataWithResultDocsMarked"
+      mode="generate-manifest-entries">
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
     </xsl:apply-templates>
   </xsl:template>

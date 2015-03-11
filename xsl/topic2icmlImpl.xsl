@@ -66,7 +66,7 @@
     <xsl:choose>
       <xsl:when test="$isChunkRoot">
         <xsl:variable name="articleUrl" as="xs:string"
-          select="local:getArticleUrlForTopic(.)"
+          select="local:getArticleUrlForTopic(., $topicref)"
         />
         <xsl:variable name="articlePath" as="xs:string"
           select="relpath:newFile($outputPath, $articleUrl)"
@@ -240,7 +240,9 @@
       "
       as="xs:string"
     />
-    <xsl:message> + [DEBUG] (mode images): linkUri="<xsl:sequence select="$linkUri"/>"</xsl:message>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] (mode images): linkUri="<xsl:sequence select="$linkUri"/>"</xsl:message>
+    </xsl:if>
     <Rectangle 
       Self="{generate-id()}">
       <Properties>
@@ -503,8 +505,16 @@
     </xsl:choose>
   </xsl:template>
   -->
+  
   <xsl:function name="local:getArticleUrlForTopic" as="xs:string">
     <xsl:param name="context" as="element()"/>
+    <xsl:sequence select="local:getArticleUrlForTopic($context, ())"/>
+  </xsl:function>
+  
+  <xsl:function name="local:getArticleUrlForTopic" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <!-- topicref param not used here but is available for overrides -->
+    <xsl:param name="topicref" as="element()?"/>
     
     <xsl:variable name="topicFilename" 
       select="relpath:getNamePart(document-uri(root($context)))" as="xs:string"/>
