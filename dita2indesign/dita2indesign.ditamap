@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pubmap PUBLIC "urn:pubid:dita4publishers.org:doctypes:dita:dtd:pubmap" "urn:pubid:dita4publishers.org:doctypes:dita:dtd:pubmap">
+<pubmap>
+ <mapref href="keys.ditamap"/>
+ <chapter keyref="dita2indesign-intro">
+  <subsection keyref="dita2indesign-overview"/>
+  <subsection keyref="dita2indesign-generating-incopy-articles-from-topics"/>
+  <subsection keyref="dita2indesign-plugin-usage"/>
+  <subsection keyref="dita2indesign-igenerating-incopy-articles">
+   <subsection keyref="dita2indesign-mapping-paragraphs-to-indesign-styles"/>
+   <subsection keyref="dita2indesign-grouped-style-name-syntax"/>
+  </subsection>
+  <subsection keyref="dita2indesign-indesign-optimization"/>
+ </chapter>
+</pubmap>

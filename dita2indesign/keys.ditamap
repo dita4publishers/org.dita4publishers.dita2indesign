@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <keydef keys="dita2indesign-intro" href="dita-to-indesign-framework-chapter.xml"/>
+  <keydef keys="dita2indesign-overview" href="indesign-product-overview.xml"/>
+  <keydef keys="dita2indesign-generating-incopy-articles-from-topics" href="generating-incopy-articles-from-topics.xml"/>
+  <keydef keys="dita2indesign-plugin-usage" href="dita-to-indesign-plugin-usage.xml"/>
+  <keydef keys="dita2indesign-igenerating-incopy-articles" href="generating-incopy-articles.xml"/>
+  <keydef keys="dita2indesign-mapping-paragraphs-to-indesign-styles" href="mapping-paragraphs-to-indesign-styles.xml"/>
+  <keydef keys="dita2indesign-grouped-style-name-syntax" href="grouped-style-name-syntax.xml"/>
+  <keydef keys="dita2indesign-indesign-optimization" href="indesign-optimization.xml"/>
+</map>
