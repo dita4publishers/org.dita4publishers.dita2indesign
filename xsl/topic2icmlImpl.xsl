@@ -141,12 +141,8 @@
       select="local:generateStyleCatalog($articleContents, $styleCatalog)"
       />
     
-    <xsl:processing-instruction name="aid">
-      style="50" type="snippet" readerVersion="6.0" featureSet="257" product="7.5(142)"
-    </xsl:processing-instruction>
-    <xsl:processing-instruction name="aid">
-      SnippetType="InCopyInterchange"
-    </xsl:processing-instruction>    
+    <xsl:processing-instruction name="aid">style="50" type="snippet" readerVersion="6.0" featureSet="257" product="7.5(142)"</xsl:processing-instruction>
+    <xsl:processing-instruction name="aid">SnippetType="InCopyInterchange"</xsl:processing-instruction>    
     <Document DOMVersion="7.5" Self="d">
       <!-- FIXME: It may be sufficient to simply generate no-property style
            definitions for each style name or it may be possible to omit
