@@ -41,7 +41,8 @@
  <xsl:template match="/*" mode="resolve-map">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
    <xsl:message> + [INFO] Root element in mode resolve-map was not a map, got <xsl:sequence select="name(.)"/>[class=<xsl:sequence select="string(@class)"/></xsl:message>
-   <map class="- map/map " xml:base="{base-uri(.)}"> 
+   <map class="- map/map "> 
+     <xsl:attribute name="xml:base" select="base-uri(.)"></xsl:attribute>
      <topicref class="- map/topicref "
         href="{base-uri(.)}"/>
    </map>
