@@ -48,10 +48,11 @@
       <xsl:variable name="matrixTableURI" as="xs:string"
         select="relpath:newFile($outputPath, concat('matrixTable-', generate-id(.), '.xml'))"
       />
-      <xsl:message> + [DEBUG] Writing matrix table to <xsl:value-of select="$matrixTableURI"/></xsl:message>
-      <xsl:result-document href="{$matrixTableURI}" indent="yes">
+      <xsl:message> + [DEBUG] ============ Matrix table:</xsl:message>
+      <xsl:message>
         <xsl:sequence select="$matrixTable"/>
-      </xsl:result-document>
+      </xsl:message>
+      <xsl:message> + [DEBUG] ============ end of matrix table ==========</xsl:message>
     </xsl:if>
     <xsl:variable name="numBodyRows"  as="xs:integer"
       select="count($matrixTable/tbody/row)"
@@ -347,10 +348,11 @@
      <xsl:variable name="uri" as="xs:string"
        select="relpath:newFile($outputPath, concat('baseMatrix-', generate-id(.), '.xml'))"
      />
-      <xsl:message> + [DEBUG] Writing base matrix to <xsl:value-of select="$uri"/></xsl:message>
-      <xsl:result-document href="{$uri}" indent="yes">
+      <xsl:message> + [DEBUG] ========= base matrix to <xsl:value-of select="$uri"/></xsl:message>
+      <xsl:message>
         <xsl:sequence select="$baseMatrix"/>
-      </xsl:result-document>
+      </xsl:message>
+     <xsl:message> + [DEBUG] ================= End of base matrix table =========== </xsl:message>
    </xsl:if>
    
    <xsl:if test="$doDebug">
@@ -381,12 +383,13 @@
       <xsl:variable name="cellSetURI" as="xs:string"
         select="relpath:newFile($outputPath, concat('cellSet-', generate-id(.), '.xml'))"
       />
-      <xsl:message> + [DEBUG] Writing cell set to <xsl:value-of select="$cellSetURI"/></xsl:message>
-      <xsl:result-document href="{$cellSetURI}" indent="yes">
+      <xsl:message> + [DEBUG] ==== cell set to <xsl:value-of select="$cellSetURI"/></xsl:message>
+      <xsl:message>
         <cellSet>
           <xsl:sequence select="$cellSet"/>
         </cellSet>
-      </xsl:result-document>
+      </xsl:message>
+      <xsl:message> + [DEBUG] ==== End of cell set =======</xsl:message>
     </xsl:if>
 
    <xsl:if test="$doDebug">

@@ -27,7 +27,7 @@
   <xsl:import href="elem2styleMapper.xsl"/>
     -->
 
-  <xsl:include href="topic2icmlImpl.xsl"/>
+  <xsl:include href="dita2indesignImpl.xsl"/>
   
   <!-- 
     The base part of the result filename, e.g. "myarticlefile".
@@ -38,10 +38,7 @@
   <xsl:param name="articleFilenameBase" as="xs:string" select="''"/>
   
   
-  <xsl:param name="debug" select="'false'"/>
-  <xsl:variable name="debugBoolean" select="if ($debug = 'true') then true() else false()" as="xs:boolean"/>
-
-  <xsl:template match="/">
+  <xsl:template match="/" priority="10">
     <xsl:if test="$debugBoolean">
       <xsl:message> + [DEBUG] topic2articleIcml.xsl: Processing doc root...</xsl:message>
     </xsl:if>
