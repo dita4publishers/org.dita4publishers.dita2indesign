@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+ <title>Tests for Table Spanning</title>
+  <topicref href="table-1x2-span-1x2-test.dita"/>
+  <topicref href="table-2x1-span-2x1-test.dita"/>
+  <topicref href="table-2x2-span-2x2-test.dita"/>
+  <topicref href="table-3x2-span-2x2-test.dita"/>
+  <topicref href="table-span-test.dita"/>
+</map>

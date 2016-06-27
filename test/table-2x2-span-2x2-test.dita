@@ -9,7 +9,7 @@
 <metadata><keywords><indexterm></indexterm></keywords></metadata>
 </prolog>
 <body>
-<p><table>
+  <p><table frame="all" colsep="1" rowsep="1">
 <tgroup cols="2"><colspec colname="col1"/><colspec colname="col2"/>
 <tbody>
 <row>

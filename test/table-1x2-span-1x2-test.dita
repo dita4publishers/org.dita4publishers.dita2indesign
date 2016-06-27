@@ -3,23 +3,28 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN"
  "topic.dtd">
 <topic id="Span-2rows-25069E80" xml:lang="sv">
-<title>Span-2–rows</title>
-<shortdesc></shortdesc>
-<prolog>
-<metadata><keywords><indexterm></indexterm></keywords></metadata>
-</prolog>
-<body>
-<p><table>
-<tgroup cols="1"><colspec colname="col1"/>
-<tbody>
-<row>
-<entry morerows="1">2–rows</entry>
-</row>
-<row>
-<entry></entry>
-</row>
-</tbody>
-</tgroup>
-</table></p>
-</body>
+  <title>Span-2–rows</title>
+  <shortdesc/>
+  <prolog>
+    <metadata>
+      <keywords>
+        <indexterm/>
+      </keywords>
+    </metadata>
+  </prolog>
+  <body>
+    <p><table frame="all" colsep="1" rowsep="1">
+        <tgroup cols="1">
+          <colspec colname="col1" />
+          <tbody>
+            <row>
+              <entry morerows="1">2–rows</entry>
+            </row>
+            <row>
+              <entry/>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></p>
+  </body>
 </topic>

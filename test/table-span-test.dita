@@ -7,7 +7,7 @@
 <table class="- topic/table " frame="all" id="rtab41.1">
     <title class="- topic/title ">TABLE 41.1 – Maximum
         disconnection times</title>
-    <tgroup class="- topic/tgroup " cols="9">
+  <tgroup class="- topic/tgroup " cols="9" colsep="1" rowsep="1">
         <colspec class="- topic/colspec " colname="c1" colnum="1" colwidth="50pt"/>
         <colspec class="- topic/colspec " colname="c2" colnum="2" colwidth="50pt"/>
         <colspec class="- topic/colspec " colname="c3" colnum="3" colwidth="62pt"/>
