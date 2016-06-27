@@ -37,7 +37,6 @@
   <xsl:template match="*[df:class(., 'topic/tgroup')]">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
-    <!--    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>-->
     <xsl:variable name="matrixTable" as="element()?">
       <xsl:apply-templates mode="make-matrix-table" select=".">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
@@ -160,95 +159,111 @@
       select="count(ancestor::*[df:class(., 'topic/tgroup')]//*[df:class(., 'topic/row')][. &lt;&lt; $parentRow] )"
     />
     
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] topic/entry: entryId="<xsl:value-of select="$entryId"/>"</xsl:message>
+    </xsl:if>
     
     <xsl:variable name="colNumber" as="xs:integer"
-      select="($matrixTable//cell[@entryId = $entryId])[1]/@colnum"
+      select="if (($matrixTable//cell[@entryId = $entryId])[1]/@colnum)
+      then (($matrixTable//cell[@entryId = $entryId])[1]/@colnum)
+      else -1"
     />
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] topic/entry:   colNumber="<xsl:value-of select="$colNumber"/>"</xsl:message>
     </xsl:if>
     
-    <xsl:variable name="colspan">
-      <xsl:choose>
-        <xsl:when test="incxgen:isColSpan(.,$colspecElems)">
-          <xsl:value-of select="incxgen:numberColsSpanned(.,$colspecElems)"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="1"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] topic/entry: colspan="<xsl:value-of select="$colspan"/>"</xsl:message>
-    </xsl:if>
-    <xsl:variable name="rowspan">
-      <xsl:choose>
-        <xsl:when test="@morerows">
-          <xsl:value-of select="number(@morerows)+1"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="1"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:variable name="colSpan" select="incxgen:makeCSpnAttr($colspan,$colCount)"/>
-    <xsl:variable name="rowSpan" select="incxgen:makeRSpnAttr($rowspan,$rowCount)"/>
-    <xsl:variable name="justification" as="xs:string"
-      select="if (@align = 'center') then 'CenterAlign'
-                 else if (@align = 'right') then 'RightAlign'
-                      else ''"
-    />
-    <!-- <xsl:message select="concat('[DEBUG: r: ',$colSpan,' c: ',$rowSpan)"/> -->
-    <xsl:text> </xsl:text><Cell 
-      Name="{$colNumber}:{$rowNumber}" 
-      RowSpan="{$rowSpan}" 
-      ColumnSpan="{$colSpan}" 
-      AppliedCellStyle="CellStyle/$ID/${cellStyle}" 
-      ppcs="l_0" 
-      Self="rc_{generate-id()}">
-      <xsl:if test="@valign">
-        <xsl:choose>
-          <xsl:when test="@valign = 'bottom'">
-            <xsl:attribute name="VerticalJustification" select="'BottomAlign'"/>
-          </xsl:when>
-          <xsl:when test="@valign='middle'">
-            <xsl:attribute name="VerticalJustification" select="'CenterAlign'"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <!-- Top is the default -->
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:if>
-      <xsl:text>&#x0a;</xsl:text>
-      <!-- must wrap cell contents in txsr and pcnt -->
-      <xsl:variable name="pStyle" as="xs:string">
-        <xsl:choose>
-          <xsl:when test="ancestor::*[df:class(., 'topic/thead')]">
-            <xsl:value-of select="'Columnhead'"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="'Body Table Cell'"></xsl:value-of>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:variable name="cStyle" select="'$ID/[No character style]'" as="xs:string"/>
-      <xsl:variable name="pStyleObjId" select="incxgen:getObjectIdForParaStyle($pStyle)" as="xs:string"/>
-      <xsl:variable name="cStyleObjId" select="incxgen:getObjectIdForCharacterStyle($cStyle)" as="xs:string"/>
-      <xsl:choose>
-        <xsl:when test="df:hasBlockChildren(.)">
-          <!-- FIXME: handle non-empty text before first block element -->
-          <xsl:apply-templates>
-            <xsl:with-param name="justification" tunnel="yes" select="$justification" as="xs:string"/>
-          </xsl:apply-templates>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="makeBlock-cont">
-            <xsl:with-param name="pStyle" tunnel="yes" select="e2s:getPStyleForElement(., $articleType)"/>
-            <xsl:with-param name="justification" tunnel="yes" select="$justification" as="xs:string"/>
-          </xsl:call-template>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:text> </xsl:text></Cell><xsl:text>&#x0a;</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$colNumber = -1">
+        <!-- Must be a cell that has been spanned away, such as a two-row span where the second row
+             has a single cell. This should not happen in normal tables as there's no point in 
+             doing this but it is allowed.
+          -->
+      </xsl:when>
+      <xsl:otherwise>
+        
+        <xsl:variable name="colspan">
+          <xsl:choose>
+            <xsl:when test="incxgen:isColSpan(.,$colspecElems)">
+              <xsl:value-of select="incxgen:numberColsSpanned(.,$colspecElems)"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="1"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:if test="$doDebug">
+          <xsl:message> + [DEBUG] topic/entry: colspan="<xsl:value-of select="$colspan"/>"</xsl:message>
+        </xsl:if>
+        <xsl:variable name="rowspan">
+          <xsl:choose>
+            <xsl:when test="@morerows">
+              <xsl:value-of select="number(@morerows)+1"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="1"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="colSpan" select="incxgen:makeCSpnAttr($colspan,$colCount)"/>
+        <xsl:variable name="rowSpan" select="incxgen:makeRSpnAttr($rowspan,$rowCount)"/>
+        <xsl:variable name="justification" as="xs:string"
+          select="if (@align = 'center') then 'CenterAlign'
+                     else if (@align = 'right') then 'RightAlign'
+                          else ''"
+        />
+        <!-- <xsl:message select="concat('[DEBUG: r: ',$colSpan,' c: ',$rowSpan)"/> -->
+        <xsl:text> </xsl:text><Cell 
+          Name="{$colNumber}:{$rowNumber}" 
+          RowSpan="{$rowSpan}" 
+          ColumnSpan="{$colSpan}" 
+          AppliedCellStyle="CellStyle/$ID/${cellStyle}" 
+          ppcs="l_0" 
+          Self="rc_{generate-id()}">
+          <xsl:if test="@valign">
+            <xsl:choose>
+              <xsl:when test="@valign = 'bottom'">
+                <xsl:attribute name="VerticalJustification" select="'BottomAlign'"/>
+              </xsl:when>
+              <xsl:when test="@valign='middle'">
+                <xsl:attribute name="VerticalJustification" select="'CenterAlign'"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <!-- Top is the default -->
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:if>
+          <xsl:text>&#x0a;</xsl:text>
+          <!-- must wrap cell contents in txsr and pcnt -->
+          <xsl:variable name="pStyle" as="xs:string">
+            <xsl:choose>
+              <xsl:when test="ancestor::*[df:class(., 'topic/thead')]">
+                <xsl:value-of select="'Columnhead'"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="'Body Table Cell'"></xsl:value-of>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:variable name="cStyle" select="'$ID/[No character style]'" as="xs:string"/>
+          <xsl:variable name="pStyleObjId" select="incxgen:getObjectIdForParaStyle($pStyle)" as="xs:string"/>
+          <xsl:variable name="cStyleObjId" select="incxgen:getObjectIdForCharacterStyle($cStyle)" as="xs:string"/>
+          <xsl:choose>
+            <xsl:when test="df:hasBlockChildren(.)">
+              <!-- FIXME: handle non-empty text before first block element -->
+              <xsl:apply-templates>
+                <xsl:with-param name="justification" tunnel="yes" select="$justification" as="xs:string"/>
+              </xsl:apply-templates>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="makeBlock-cont">
+                <xsl:with-param name="pStyle" tunnel="yes" select="e2s:getPStyleForElement(., $articleType)"/>
+                <xsl:with-param name="justification" tunnel="yes" select="$justification" as="xs:string"/>
+              </xsl:call-template>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:text> </xsl:text></Cell><xsl:text>&#x0a;</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template name="makeTableCaption">
@@ -297,7 +312,7 @@
    <!-- Construct a table of rows and columns
         reflecting each logical row and column
         of the table so that we know, for any
-        cell, know what it's absolute row/column
+        cell, what its absolute row/column
         position within the matrix is.     
      
        Do this in two phases:

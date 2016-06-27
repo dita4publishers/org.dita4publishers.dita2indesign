@@ -375,7 +375,8 @@
     <xsl:variable name="result" as="xs:double" >
       <xsl:choose>
         <xsl:when test="boolean($colspec)">
-          <xsl:variable name="baseWid" as="xs:string" select="$colspec/@colwidth"/>
+          <xsl:variable name="baseWid" as="xs:string" 
+            select="if ($colspec/@colwidth) then $colspec/@colwidth else '1*'"/>
           <xsl:choose>
             <xsl:when test="ends-with($baseWid, 'pt')">
               <xsl:sequence select="number(substring-before($baseWid, 'pt'))"/>
