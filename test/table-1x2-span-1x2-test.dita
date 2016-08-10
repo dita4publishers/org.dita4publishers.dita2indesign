@@ -13,6 +13,11 @@
     </metadata>
   </prolog>
   <body>
+    <p>This table is not a valid CALS table because the spaning of the first
+    row into the second creates effectively two columns, one for the spanned-in entry from
+    the first row and one for the existing entry in the second row. Because 
+    entry is required you cannot have a row with zero entries. So this table is basically
+    user error.</p>
     <p><table frame="all" colsep="1" rowsep="1">
         <tgroup cols="1">
           <colspec colname="col1" />
