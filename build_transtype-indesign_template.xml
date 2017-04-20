@@ -1,4 +1,5 @@
 <project name="dita2indesign" default="dita2indesign"
+	xmlns:dita="http://dita-ot.sourceforge.net"
   >
   
 	<target name="dita2indesign"
@@ -70,7 +71,10 @@
     	<param name="titleOnlyTopicTitleClassSpec" expression="${title.only.topic.title.class.spec}"/>
 
     	<!-- Parameters from dita2xhtml and similar transtypes: -->   
-      <param name="WORKDIR" expression="${workdir}" if="workdir"/>
+      	<param name="WORKDIR" expression="${workdir}" if="workdir"/>
+    	
+    	<dita:extension id="d4p.indesign.xslt.param" behavior="org.dita.dost.platform.InsertAction"/>
+
       <xmlcatalog refid="dita.catalog"></xmlcatalog>
     </xslt>
   	<echo message="[DEBUG] Transform applied"/>
@@ -98,7 +102,10 @@
     	<param name="rawPlatformString" expression="${os.name}"/>
 
     	<!-- Parameters from dita2xhtml and similar transtypes: -->   
-      <param name="WORKDIR" expression="${workdir}" if="workdir"/>
+      	<param name="WORKDIR" expression="${workdir}" if="workdir"/>
+
+    	<dita:extension id="d4p.indesign.xslt.param" behavior="org.dita.dost.platform.InsertAction"/>
+
       <xmlcatalog refid="dita.catalog"></xmlcatalog>
     </xslt>
   	
