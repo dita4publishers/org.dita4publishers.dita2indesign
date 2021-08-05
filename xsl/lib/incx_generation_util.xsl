@@ -11,7 +11,7 @@
       xmlns:xhtml="http://www.w3.org/1999/xhtml"
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       exclude-result-prefixes="xs idsc incxgen ditaarch xmp-x pam prism dc pim xhtml"
-      version="2.0">
+      version="3.0">
   
   <!-- URL (relative to the stylesheet document if not absolute)
        of the InDesign style catalog to use in generating 

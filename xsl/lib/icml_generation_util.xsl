@@ -12,7 +12,7 @@
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       xmlns:df="http://dita2indesign.org/dita/functions"
       exclude-result-prefixes="xs idsc incxgen ditaarch xmp-x pam prism dc pim xhtml df"
-      version="2.0">
+      version="3.0">
   <!-- =================================================
        Adobe InCopy Markup Language (ICML) generation utilities.
        

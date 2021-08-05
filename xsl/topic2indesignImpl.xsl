@@ -8,7 +8,7 @@
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       xmlns:RSUITE="http://www.reallysi.com"
       exclude-result-prefixes="xs local df relpath incxgen e2s RSUITE"
-      version="2.0">
+      version="3.0">
   
   <!-- Topic to INX Transformation.
     

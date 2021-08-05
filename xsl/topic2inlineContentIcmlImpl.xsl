@@ -6,7 +6,7 @@
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       exclude-result-prefixes="xs df e2s relpath incxgen"
-      version="2.0">
+      version="3.0">
   
   <!-- "cont" (content) mode templates. This mode generates output that
        goes within InDesign paragraphs (text runs).

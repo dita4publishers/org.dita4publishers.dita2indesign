@@ -7,7 +7,7 @@
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       xmlns:relpath="http://dita2indesign/functions/relpath"
       exclude-result-prefixes="xs df ctbl incxgen e2s relpath"
-      version="2.0">
+      version="3.0">
   
   <!-- CALS table to IDML table 
     

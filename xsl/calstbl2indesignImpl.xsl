@@ -6,7 +6,7 @@
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       exclude-result-prefixes="xs df ctbl incxgen e2s"
-      version="2.0">
+      version="3.0">
   
   <!-- CALS table to InDesign table 
     

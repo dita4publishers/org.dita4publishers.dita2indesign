@@ -9,7 +9,7 @@
       xmlns:idsc="http://www.reallysi.com/namespaces/indesign_style_catalog"
       xmlns:incxgen="http//dita2indesign.org/functions/incx-generation"
       exclude-result-prefixes="xs local df relpath e2s RSUITE idsc incxgen"
-      version="2.0">
+      version="3.0">
   
   <!-- Topic to ICML Transformation.
     

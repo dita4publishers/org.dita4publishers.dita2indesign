@@ -5,7 +5,7 @@
       xmlns:df="http://dita2indesign.org/dita/functions"
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       exclude-result-prefixes="xs local df e2s"
-      version="2.0">
+      version="3.0">
   
   <!-- Element-to-style mapper
     

@@ -5,7 +5,7 @@
       xmlns:relpath="http://dita2indesign/functions/relpath"
       xmlns:df="http://dita2indesign.org/dita/functions"
       exclude-result-prefixes="xs local df relpath"
-  version="2.0">
+  version="3.0">
   <!-- Implements the generate-result-docs mode for dita2icml -->
   
   <xsl:template mode="generate-result-docs generate-manifest-entries" match="local:root">

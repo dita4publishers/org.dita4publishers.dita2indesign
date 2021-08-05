@@ -6,7 +6,7 @@
       xmlns:relpath="http://dita2indesign/functions/relpath"
       xmlns:e2s="http//dita2indesign.org/functions/element-to-style-mapping"
       exclude-result-prefixes="xs df local relpath e2s"
-      version="2.0">
+      version="3.0">
   
   <!-- Transform to generate an InCopy article (.icml) from a DITA topic
        
